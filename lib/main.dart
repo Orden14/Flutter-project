@@ -3,8 +3,7 @@ import 'auth/login_page.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-import 'home/welcome_page.dart';
+import 'todo/todo_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +23,7 @@ class MyApp extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return const WelcomePage();
+            return const TodoPage();
           }
           return const LoginPage();
         },

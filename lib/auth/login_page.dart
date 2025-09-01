@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../home/welcome_page.dart';
+import '../todo/todo_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -30,36 +30,36 @@ class _LoginPageState extends State<LoginPage> {
       // Only navigate if authentication succeeds
       if (FirebaseAuth.instance.currentUser != null) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const WelcomePage()),
+          MaterialPageRoute(builder: (context) => const TodoPage()),
         );
       }
     } on FirebaseAuthException catch (e) {
       String message;
       switch (e.code) {
         case 'user-not-found':
-          message = 'No user found for that email.';
+          message = 'Il n\'y a pas d\'utilisateur correspondant à cet e-mail.';
           break;
         case 'wrong-password':
-          message = 'Wrong password provided.';
+          message = 'Le mot de passe fourni est incorrect.';
           break;
         case 'email-already-in-use':
-          message = 'Email is already in use.';
+          message = 'L\'email est déjà utilisé.';
           break;
         case 'invalid-email':
-          message = 'Invalid email address.';
+          message = 'Adresse e-mail invalide.';
           break;
         case 'network-request-failed':
-          message = 'Network error. Please check your connection.';
+          message = 'Erreur réseau. Veuillez vérifier votre connexion.';
           break;
         default:
-          message = 'Error: ${e.code}${e.message != null ? ' - ${e.message}' : ''}';
+          message = 'Erreur ninattendue: ${e.code}${e.message != null ? ' - ${e.message}' : ''}';
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unexpected error: ${e.toString()}')),
+        SnackBar(content: Text('Erreur inattendue: ${e.toString()}')),
       );
     }
   }
@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(isLogin ? 'Login' : 'Register')),
+      appBar: AppBar(title: Text(isLogin ? 'Connexion' : 'Inscription')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -78,18 +78,18 @@ class _LoginPageState extends State<LoginPage> {
             ),
             TextField(
               controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(labelText: 'Mot de passe'),
               obscureText: true,
             ),
             ElevatedButton(
               onPressed: authenticate,
-              child: Text(isLogin ? 'Login' : 'Register'),
+              child: Text(isLogin ? 'Connexion' : 'Inscription'),
             ),
             TextButton(
               onPressed: () => setState(() => isLogin = !isLogin),
               child: Text(isLogin
-                  ? 'Don\'t have an account? Register'
-                  : 'Already have an account? Login'),
+                  ? 'Vous n\'avez pas de compte? Inscrivez-vous'
+                  : 'Vous avez déjà un compte? Connexion'),
             ),
           ],
         ),
