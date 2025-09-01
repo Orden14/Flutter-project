@@ -21,5 +21,5 @@ flutter run
 ## Variables d'environement
 
 La variable `ENV` du fichier [.env](./.env) peut être modifiée pour avoir des résultats différents : 
-- si `ENV=dev` : une fausse base de données temporaire est utilisée
+- si `ENV=dev` : une fausse base de données temporaire est utilisée (et la page de login est désactivée)
 - si `ENV=prod` : la base de données de production (firebase) est utilisée
