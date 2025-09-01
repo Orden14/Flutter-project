@@ -27,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
           password: passwordController.text.trim(),
         );
       }
-      // Only navigate if authentication succeeds
+
       if (FirebaseAuth.instance.currentUser != null) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const TodoPage()),
@@ -35,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on FirebaseAuthException catch (e) {
       String message;
+      
       switch (e.code) {
         case 'user-not-found':
           message = 'Il n\'y a pas d\'utilisateur correspondant à cet e-mail.';
