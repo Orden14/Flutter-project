@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'todo.dart';
+import 'package:todolist/todo/repository/abstract_todo_repository.dart';
+import 'package:todolist/todo/repository/firebase_todo_repository.dart';
+import 'package:todolist/todo/repository/mock_todo_repository.dart';
+import 'model/todo.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -11,13 +13,14 @@ class TodoPage extends StatefulWidget {
 }
 
 class _TodoPageState extends State<TodoPage> {
-  final user = FirebaseAuth.instance.currentUser;
-  late DatabaseReference todosRef;
+  late final AbstractTodoRepository repository;
 
   @override
   void initState() {
     super.initState();
-    todosRef = FirebaseDatabase.instance.ref('todos/${user!.uid}');
+
+    final env = dotenv.env['ENV'] ?? 'dev';
+    repository = env == 'prod' ? FirebaseTodoRepository() : MockTodoRepository();
   }
 
   void _addOrEditTodo({Todo? todo}) async {
@@ -65,22 +68,25 @@ class _TodoPageState extends State<TodoPage> {
                 child: Text(todo == null ? 'Ajouter' : 'Enregistrer'),
                 onPressed: () async {
                   if (titleController.text.isEmpty) {
-                    setState(() => errorText = 'Un titre est requis');
+                    setState(() => errorText = 'Le titre est requis');
                     return;
                   }
+
                   if (dueDate == null) {
                     setState(() => errorText = 'La date d\'échéance est requise');
                     return;
                   }
+
                   final newTodo = Todo(
-                    id: todo?.id ?? todosRef.push().key!,
+                    id: todo?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
                     title: titleController.text,
                     description: descController.text,
                     dueDate: dueDate!,
                     isDone: todo?.isDone ?? false,
                   );
+
                   try {
-                    await todosRef.child(newTodo.id).set(newTodo.toMap());
+                    await repository.addOrEditTodo(newTodo);
                     Navigator.pop(context);
                   } catch (e) {
                     setState(() => errorText = 'Échec de l\'enregistrement de la tâche : $e');
@@ -108,8 +114,8 @@ class _TodoPageState extends State<TodoPage> {
           ElevatedButton(
             child: const Text('Supprimer'),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              todosRef.child(id).remove();
+            onPressed: () async {
+              await repository.deleteTodo(id);
               Navigator.pop(context);
             },
           ),
@@ -118,8 +124,8 @@ class _TodoPageState extends State<TodoPage> {
     );
   }
 
-  void _toggleDone(Todo todo) {
-    todosRef.child(todo.id).update({'isDone': !todo.isDone});
+  void _toggleDone(Todo todo) async {
+    await repository.toggleDone(todo);
   }
 
   @override
@@ -128,27 +134,25 @@ class _TodoPageState extends State<TodoPage> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Mes Tâches'),
+          title: const Text('Mes tâches'),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'À faire'),
-              Tab(text: 'Tâches terminées'),
+              Tab(text: 'Terminées'),
             ],
           ),
         ),
-        body: StreamBuilder<DatabaseEvent>(
-          stream: todosRef.orderByChild('dueDate').onValue,
+        body: StreamBuilder<List<Todo>>(
+          stream: repository.todos(),
           builder: (context, snapshot) {
-            if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return const Center(child: Text('Aucune tâche disponible dans cet onglet.'));
             }
-            final data = Map<String, dynamic>.from(snapshot.data!.snapshot.value as Map);
-            final todos = data.entries
-                .map((e) => Todo.fromMap(Map<String, dynamic>.from(e.value), e.key))
-                .toList()
-              ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+
+            final todos = snapshot.data!..sort((a, b) => a.dueDate.compareTo(b.dueDate));
             final toDoList = todos.where((t) => !t.isDone).toList();
             final doneList = todos.where((t) => t.isDone).toList();
+
             return TabBarView(
               children: [
                 _buildTodoList(toDoList),
@@ -167,15 +171,17 @@ class _TodoPageState extends State<TodoPage> {
 
   Widget _buildTodoList(List<Todo> todos) {
     if (todos.isEmpty) {
-      return const Center(child: Text('Aucune tâche pour le moment.'));
+      return const Center(child: Text('Aucune tâche ici.'));
     }
+
     return ListView.builder(
       itemCount: todos.length,
       itemBuilder: (context, i) {
         final todo = todos[i];
+        
         return ListTile(
           title: Text(todo.title),
-          subtitle: Text('${todo.description}\nDue: ${todo.dueDate.toLocal().toString().split(' ')[0]}'),
+          subtitle: Text('${todo.description}\nÉchéance : ${todo.dueDate.toLocal().toString().split(' ')[0]}'),
           isThreeLine: true,
           leading: Checkbox(
             value: todo.isDone,
