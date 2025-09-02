@@ -1,70 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../todo/todo_page.dart';
+import 'service/auth_service.dart';
 
-class LoginPage extends StatefulWidget {
+final class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+final class _LoginPageState extends State<LoginPage> {
+  final AuthService _authService = AuthService();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool isLogin = true;
-
-  Future<void> authenticate() async {
-    try {
-      if (isLogin) {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
-        );
-      } else {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
-        );
-      }
-
-      if (FirebaseAuth.instance.currentUser != null) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const TodoPage()),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      String message;
-      
-      switch (e.code) {
-        case 'user-not-found':
-          message = 'Il n\'y a pas d\'utilisateur correspondant à cet e-mail.';
-          break;
-        case 'wrong-password':
-          message = 'Le mot de passe fourni est incorrect.';
-          break;
-        case 'email-already-in-use':
-          message = 'L\'email est déjà utilisé.';
-          break;
-        case 'invalid-email':
-          message = 'Adresse e-mail invalide.';
-          break;
-        case 'network-request-failed':
-          message = 'Erreur réseau. Veuillez vérifier votre connexion.';
-          break;
-        default:
-          message = 'Erreur ninattendue: ${e.code}${e.message != null ? ' - ${e.message}' : ''}';
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur inattendue: ${e.toString()}')),
-      );
-    }
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
               obscureText: true,
             ),
             ElevatedButton(
-              onPressed: authenticate,
+              onPressed: () => _authService.authenticate(context, emailController, passwordController, isLogin),
               child: Text(isLogin ? 'Connexion' : 'Inscription'),
             ),
             TextButton(
