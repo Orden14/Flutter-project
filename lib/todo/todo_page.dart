@@ -112,12 +112,12 @@ class _TodoPageState extends State<TodoPage> {
             onPressed: () => Navigator.pop(context),
           ),
           ElevatedButton(
-            child: const Text('Supprimer'),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               await repository.deleteTodo(id);
               Navigator.pop(context);
             },
+            child: const Text('Supprimer'),
           ),
         ],
       ),
