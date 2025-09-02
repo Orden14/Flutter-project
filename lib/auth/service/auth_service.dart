@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:todolist/todo/todo_page.dart';
 import 'error_service.dart';
 
-class AuthService {
+final class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ErrorService _errorService = ErrorService();
 

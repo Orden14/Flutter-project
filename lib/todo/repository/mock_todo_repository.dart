@@ -2,7 +2,7 @@ import 'dart:async';
 import '../model/todo.dart';
 import 'abstract_todo_repository.dart';
 
-class MockTodoRepository implements AbstractTodoRepository {
+final class MockTodoRepository implements AbstractTodoRepository {
   final List<Todo> _todos = [];
   final _controller = StreamController<List<Todo>>.broadcast();
 

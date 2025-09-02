@@ -1,4 +1,4 @@
-class Todo {
+final class Todo {
   String id;
   String title;
   String description;

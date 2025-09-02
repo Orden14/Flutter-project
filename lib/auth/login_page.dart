@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'service/auth_service.dart';
 
-class LoginPage extends StatefulWidget {
+final class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+final class _LoginPageState extends State<LoginPage> {
   final AuthService _authService = AuthService();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();

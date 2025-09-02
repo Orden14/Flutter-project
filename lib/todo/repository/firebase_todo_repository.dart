@@ -3,7 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import '../model/todo.dart';
 import 'abstract_todo_repository.dart';
 
-class FirebaseTodoRepository implements AbstractTodoRepository {
+final class FirebaseTodoRepository implements AbstractTodoRepository {
   final user = FirebaseAuth.instance.currentUser;
   late final DatabaseReference todosRef;
 
